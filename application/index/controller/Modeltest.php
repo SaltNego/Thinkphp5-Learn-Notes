@@ -9,8 +9,10 @@ namespace app\index\controller;
 
 use think\Controller;
 use app\index\model\User;
+use think\Db;
 use think\Loader;
 use think\Request;
+use app\index\model\Profile as ProfileModel;
 
 class Modeltest extends Controller{
 
@@ -208,7 +210,102 @@ class Modeltest extends Controller{
         $status = $userModel->where('id','=',$id)->delete();//成功
         halt($status);
 
-
-
     }
+
+    public function modelgl(){
+        echo "ok";
+        //一对一
+        /*
+        //连表查询
+        //关联模型的学习
+        //方法一关联模型查询
+        //id=5的用户信息存在记录
+        $id = 3;
+        //$userModel = new User();
+        $info = User::get(['id'=>3]);//务必使用数组
+        //var_dump($info);
+        //获取关联信息;
+        //1.获取当前模型对象
+        //2.调用当前模型对象在模型类里面定义的关联方法，作为属性调用
+        //3.可以使用toArray（）为一个数组
+        echo "<h2>关联信息：</h2>";
+        var_dump($info->profile->toArray());
+        //某个属性
+        var_dump($info->profile->address);
+
+        //方法二：使用原生sql语句
+        //sql语句完成关联查询
+        echo "<hr>";
+        //直接写sql语句
+        $sql = "select a.*,b.car_id,b.address from sh_user a left join sh_profile b on a.id=b.user_id where a.id=".$id;
+        $data = Db::query($sql);
+        echo gettype($data);
+        var_dump($data);
+
+        //方法三：链式操作
+        echo "<hr>";
+        $userModel = new User();
+        $info = $userModel->field('b.address,a.*,b.car_id,b.education')//要查询的字段
+            ->alias('a')//设置当前表的别名
+            ->join('sh_profile b','a.id=b.user_id','LEFT')
+            //‘关联的表并取别名’，‘关联条件’，‘关联方式’  重要重要重要
+            ->where('a.id=5')
+            ->select();
+        //var_dump($info);
+
+        $fix = function ($val){
+            return $val->toArray();
+        };
+        $rs = array_map($fix,$info);
+        var_dump($rs);
+        */
+
+        /*
+        //关联添加
+        //方法1.获取模型对象 sh_user 不使用关联模型
+        $data = [
+            'id' => 6,
+            'username' => 'modeltianjia',
+            'password' => md5('admin1'),
+            'email' => 'modeltianjia@qq.com',
+        ];
+        $obj = User::create($data);
+        if($obj){
+            //sh_profilr表
+            $insertId = $obj->id;
+            $insertData = [
+                'user_id' => $insertId,
+                'car_id' => mt_rand(100,200),
+                'address' => 'shanghai',
+                'education' => 'zhongxue',
+            ];
+            $obj = ProfileModel::create($insertData);
+            if($obj){
+                halt($obj->toArray());
+            }else{
+                exit('no insert');
+            }
+        }
+        */
+
+        //方法2.使用tp关联模型
+        $data = [
+            'id' => mt_rand(100,200),
+            'username' => 'modeltianjia22',
+            'password' => md5('admin2'),
+            'email' => 'modeltianjia22@qq.com',
+        ];
+        $obj = User::create($data);
+        var_dump($obj->toArray());
+        if($obj){
+            $insertData = [
+                'car_id' => mt_rand(100, 200),
+                'address' => 'shanghai2',
+                'education' => 'zhongxue2',
+            ];
+            $obj = $obj->profile()->save($insertData);
+            halt($obj->toArray());
+        }
+    }
+
 }
