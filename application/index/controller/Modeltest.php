@@ -9,6 +9,7 @@ namespace app\index\controller;
 
 use think\Controller;
 use app\index\model\User;
+use think\Loader;
 use think\Request;
 
 class Modeltest extends Controller{
@@ -94,7 +95,7 @@ class Modeltest extends Controller{
             echo $v."</br>";
         }
         echo "</hr>";
-        halt($info);//方法一测试成功，但是目前只能返货id的第一个数据未解决
+        halt($info);//方法一测试成功，但是只能返回id的第一条数据
 
 
         //2.模型类的get方法（传递其他字段为条件）//where方法
@@ -138,6 +139,74 @@ class Modeltest extends Controller{
         };
         $rs = array_map($fix,$data);
         var_dump($rs);
+
+
+    }
+    public function loadtest(Request $request){
+
+        //便捷方式获取模型实例
+        //方法一
+        $userModel = model('User');//等价于new User（）；
+        $info=$userModel->find(11);
+        //var_dump($info->toArray());
+
+        //方法二
+        $userModel = Loader::model('User');
+        $info = $userModel->find(3);
+        halt($info->toArray());
+
+    }
+
+    public function updatetest(Request $request){
+        //更新
+        /*
+        //先get后save
+        $id = 3;
+        $info = User::get($id);
+        //var_dump($info);
+        $info->username = 'new_username';
+        $info->password = md5($id);
+        $ida['id'] = 3;
+        $status = $info->save();//失败，求教
+        var_dump($status);
+        */
+
+        //模型类update方法
+        //$id['id'] = 3;
+        $data = [
+            'id' => 3,
+            'username' => 'newusername',
+            'password' => md5('aaa'),
+            'email' => 'neweamil@qq.com',
+        ];
+
+        //$status = User::update($data);//更新id为7的数据 无法更新成功 失败
+        $status = User::where('id','=','7')->update($data); //可以使用 成功
+        halt($status);
+
+    }
+
+    public function deletetest(){
+        //删除
+        /*
+        //1. 先使用模型类的get()静态方法，然后在使用模型对象的delete()方法
+        $id = 8;
+        $info = User::get($id);//获取模型对象
+        if($info){
+            $status = $info->delete();//出错 没有条件不会执行删除操作
+            var_dump($status);
+        }
+
+        //2.使用destroy同时删除多条数据
+        $id = 9;//可以同时删除多条数据 $id=[1,2,3]
+        $status = User::destroy($id);//没有条件不会执行删除操作
+        */
+
+        //3.模型对象的delete方法进行删除(需要传递删除条件)
+        $id = 9;
+        $userModel = new User();
+        $status = $userModel->where('id','=',$id)->delete();//成功
+        halt($status);
 
 
 
